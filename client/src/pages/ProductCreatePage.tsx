@@ -1,7 +1,15 @@
-import { ProductCreateForm } from "../components/create";
+import { Container, Typography } from "@mui/material";
+import { ProductForm } from "../components/edit";
 
 const ProductCreatePage = () => {
-  return <ProductCreateForm />;
+  return (
+    <Container maxWidth="sm">
+      <Typography variant="h4" gutterBottom>
+        상품 생성
+      </Typography>
+      <ProductForm mode="create" />
+    </Container>
+  );
 };
 
 export default ProductCreatePage;

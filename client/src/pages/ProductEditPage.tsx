@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Container, Typography, Box } from "@mui/material";
-
-import { ProductEditForm, SuccessModal } from "../components/edit";
+import { ProductForm } from "../components/edit";
+import { SuccessModal } from "../components/edit";
 
 const ProductEditPage = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -35,9 +35,10 @@ const ProductEditPage = () => {
           상품 수정
         </Typography>
         
-        <ProductEditForm 
+        <ProductForm 
+          mode="edit"
           productId={productId} 
-          onSuccess={handleSuccess} 
+          onSuccess={() => handleSuccess()} 
         />
         
         <SuccessModal 
