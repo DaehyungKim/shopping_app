@@ -1,12 +1,15 @@
 import { useCookies } from "react-cookie";
 import { ProductType } from "../types";
 import { useMemo, useEffect, useState  } from "react";
+import { getProduct } from "../utils/api";
 
 const COOKIE_KEY = "cart" as const;
+type CartType = ProductType & { count: number };
 
 const useCart = () => {
+  
   const [cookies, setCookies] = useCookies([COOKIE_KEY]);
-  const [carts, setCarts] = useState<ProductType[]>([]);     
+  const [carts, setCarts] = useState<CartType[]>([]);     
   const productIds = useMemo(
     () => (cookies.cart as string[]) ?? [],
     [cookies]
@@ -17,23 +20,64 @@ const useCart = () => {
       path: "/",
     });
   };
-  const getProductById = (id: string) => {
-    return fetch(`/product/${id}`)
-    .then(response => response.json());
+
+  const deleteCart = (id: string) => {
+    const tempArr = [...productIds];
+    const resultArr = tempArr.filter((productId)=>( productId !== id ))
+    setCookies(COOKIE_KEY, resultArr, {
+      path: "/",
+    });
+    
+  };
+  
+
+  const changeCount = (productId: string, mode: "increase" | "decrease") => {
+    const index = productIds.indexOf(productId);
+    if (index === -1) {
+      return;
+    }
+
+    if (mode === "decrease") {
+      const tempArr = [...productIds];
+      tempArr.splice(index, 1);
+
+      
+      if (!tempArr.includes(productId)) {
+        return;
+      }
+
+
+      setCookies(COOKIE_KEY, tempArr, {
+        path: "/",
+      });
+    }
+
+    if (mode === "increase") {
+      setCookies(COOKIE_KEY, [...productIds, productId], {
+        path: "/",
+      });
+    }
   };
   useEffect(() => {
     if (productIds && productIds.length) {
       const requestList: Array<Promise<any>> = [];
-      productIds.forEach((id) => {
-        requestList.push(getProductById(id));
-      })
+      const requestIds = productIds.reduce(
+        (acc, cur) => acc.set(cur, (acc.get(cur) || 0) + 1),
+        new Map<string, number>()
+      );
 
-      Promise.all(requestList)
-       .then((response) => {
-        const cartList: ProductType[] = 
-        response.map((item) => item.product);
-        setCarts(cartList);
+      Array.from(requestIds.keys()).forEach((id) => {
+        requestList.push(getProduct(id));
       });
+      Promise.all(requestList).then((responseList) => {
+        const cartsData: CartType[] = responseList.map((response) => ({
+          ...response.data.product,
+          count: requestIds.get(response.data.product.id),
+        }));
+        setCarts(cartsData);
+      });
+    } else {
+      setCarts([]);
     }
   }, [productIds]);
 
@@ -41,7 +85,9 @@ const useCart = () => {
   
   return {
     carts,
-    addCarts
+    addCarts,
+    changeCount,
+    deleteCart,
   }
 };
 

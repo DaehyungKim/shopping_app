@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ProductType } from "../../types";
 import { Grid, Card, CardContent, CardMedia, Typography, Button, Box } from "@mui/material";
@@ -10,17 +9,12 @@ interface ProductItemProps {
 
 function ProductItem({ product }: ProductItemProps) {
   const navigate = useNavigate();
-  const { id, name, price, explanation } = product;
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editName, setEditName] = useState(product.name);
-  const [editExplanation, setEditExplanation] = useState(product.explanation);
-  const [editPrice, setEditPrice] = useState(product.price);
   const hnadlePushProductPage = () => {navigate(`/product/${product.id}`);};
   const handlePushPurchasePage = () => navigate(`/purchase/${product.id}`);
 
   return (
     <Grid sx={{ width: { md: '30%'},padding: 1.5}}>
-      <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+      <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
         onClick={hnadlePushProductPage}>
         {product.thumbnail && (
           <CardMedia
@@ -30,7 +24,7 @@ function ProductItem({ product }: ProductItemProps) {
             title={product.name}
           />
         )}
-        <CardContent sx={{ padding: 0 }}>
+        <CardContent sx={{ padding: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Typography
             gutterBottom
             variant="h5"
@@ -39,6 +33,8 @@ function ProductItem({ product }: ProductItemProps) {
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
+              fontFamily: "'Roboto', 'Noto Sans KR', sans-serif",
+              letterSpacing: '-0.5px'
             }}
           >
             {product.name}

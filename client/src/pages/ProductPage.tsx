@@ -1,23 +1,31 @@
 import { Delete, Edit } from "@mui/icons-material";
-import { Box, Button, ButtonGroup, Container, Dialog, DialogActions,
+import { Box, Button, ButtonGroup, Container, Dialog, DialogActions, CircularProgress,
   DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ProductType } from "../types";
 import { API_SERVER_DOMAIN } from "../constants";
-// import Edit from "@mui/icons-material/Edit";
-// import Delete from "@mui/icons-material/Delete";
-import { useCookies } from "react-cookie";
+import { deleteProduct, getProduct } from "../utils/api";
 import { useCart } from "../hooks";
+import useAsync from "../hooks/useAsync";
+import { NotFoundPage } from ".";
+
 
 
 const ProductPage = () => {
   const navigate = useNavigate();
   const { addCarts } = useCart();
   const { productId } = useParams<{ productId: string }>();
-  const [product, setProduct] = useState<ProductType | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModal, setIsDeleteModal] = useState(false);
+  const { loading: getProductLoading, data } = useAsync(() =>
+    getProduct(productId!)
+  );
+  const { request: deleteProductRequest, loading: deleteProductLoading } =
+    useAsync(() => deleteProduct(productId!), {
+      initialRequest: false,
+    });
+
+
   const handleAddCard = () => {
     if (product) {
       addCarts(product.id);
@@ -33,12 +41,29 @@ const ProductPage = () => {
       navigate(`/purchase/${productId}`);
     }
   };
+  const handlePushHomePage = () => {
+    navigate(`/`);
+  };
 
-  useEffect(() => {
-    fetch(`/product/${productId}`)
-      .then((response) => response.json())
-      .then((data) => setProduct(data.product));
-  }, [productId]);
+
+  const handleDeleteProduct = async () => {
+    setIsDeleteModal(false);
+    await deleteProductRequest();
+    handlePushHomePage();
+  };
+  if (getProductLoading || deleteProductLoading) return (
+    <Box sx={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      minHeight: '50vh'
+    }}>
+      <CircularProgress />
+    </Box>
+  );
+  if (!productId || !data) return <NotFoundPage />;
+  
+  const product = data.data.product;
 
   if (!product) {
     return <h1>찾으시는 상품이 없습니다.</h1>;
@@ -46,7 +71,7 @@ const ProductPage = () => {
   return (
     <>
       <Container maxWidth="sm">
-        <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 8 }}>
           {product?.thumbnail && (
             <img
               src={`${API_SERVER_DOMAIN}/${product.thumbnail}`}
@@ -76,7 +101,7 @@ const ProductPage = () => {
             </Button>
 
             <Button
-              variant="text" onClick={()=>null}
+              variant="text" onClick={() => navigate(`/edit/${product.id}`)}
               color="info"
             >
               <Edit />
@@ -91,7 +116,7 @@ const ProductPage = () => {
           {product?.explanation}
         </Typography>
 
-        <ButtonGroup orientation="vertical" fullWidth>
+        <ButtonGroup orientation="vertical" fullWidth sx={{ mb: 4 }}>
           <Button variant="outlined" onClick={handleAddCard}>
             장바구니 담기
           </Button>
@@ -113,7 +138,7 @@ const ProductPage = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsDeleteModal(false)}>아니요</Button>
-          <Button autoFocus>네</Button>
+          <Button autoFocus onClick={handleDeleteProduct}>네</Button>
         </DialogActions>
       </Dialog>
 

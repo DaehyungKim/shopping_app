@@ -8,6 +8,10 @@ import { Button, Container,
   DialogContentText,
   DialogTitle,TextField, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { createProduct, modifyThumbnail } from "../../utils/api";
+import useAsync from "../../hooks/useAsync";
+
+
 
 
 const ProductCreateForm = () => {
@@ -18,6 +22,8 @@ const ProductCreateForm = () => {
   const [createdProductId, setCreatedProductId] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  
 
 
 
@@ -33,42 +39,32 @@ const ProductCreateForm = () => {
     setExplanation(event.target.value);
   };
 
-  const uploadThumbnailRequest = (productId: String, thumbnail: File) => {
-    const formData = new FormData();
-    formData.append("thumbnail", thumbnail);
-    return fetch(`/product/thumbnail/${productId}`, {
-      method: "PATCH",
-      body: formData,
-    });
-  };
+  const { request: thumbnailUploadRequest } = useAsync(modifyThumbnail, {
+    initialRequest: false,
+  });
 
-  const createProductRequest = (newProduct: Omit<ProductType, "id">) => {
-    return fetch("/product", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newProduct),
-    });
-  };
+  const { request: createProductRequest } = useAsync(createProduct, {
+    initialRequest: false,
+  });
 
-  const handleCreateProduct = async(event: React.FormEvent) => {
+  const handleCreateProduct = async (event: React.FormEvent) => {
     event.preventDefault();
-    const response = await createProductRequest({
+
+    const createProductResponse = await createProductRequest({
       name,
       explanation,
       price,
     });
-    const data = await response.json();
-    console.log(data.message);
-    if(thumbnail){
-      const thumbnailResponse = await uploadThumbnailRequest(data.product.id, thumbnail);
-      const thumbnailData = await thumbnailResponse.json();
-      console.log(thumbnailData.message);
-    };
-    setCreatedProductId(data.product.id);
-    setIsModalOpen(true);
 
+    if (thumbnail) {
+      await thumbnailUploadRequest(
+        createProductResponse.data.product.id,
+        thumbnail
+      );
+    }
+
+    setCreatedProductId(createProductResponse.data.product.id);
+    setIsModalOpen(true);
   };
   const handlePushProductPage = () => {
     setIsModalOpen(false);

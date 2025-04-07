@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { Layout } from "./components/shared";
-import { CartPage, HomePage, ProductCreatePage, NotFoundPage, ProductPage, PurchasePage } from "./pages";
+import { CartPage, HomePage, ProductCreatePage, ProductEditPage, NotFoundPage, ProductPage, PurchasePage } from "./pages";
 
 
 
@@ -13,6 +13,7 @@ function App() {
         <Route path="cart" element={<CartPage />} />
         <Route path="product/:productId" element={<ProductPage />} />
         <Route path="purchase/:productId" element={<PurchasePage />} />
+        <Route path="edit/:productId" element={<ProductEditPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Layout>  

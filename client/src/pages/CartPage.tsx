@@ -22,6 +22,9 @@ const CartPage = () => {
   const navigate = useNavigate();
   const { carts } = useCart();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const totalPrice = 
+    carts.reduce((prev, cur) => prev + (cur.price * cur.count), 0);
   const handlePurchaseProduct = (event: React.FormEvent) => {
     event.preventDefault();
     setIsModalOpen(true);
@@ -58,13 +61,13 @@ const CartPage = () => {
             <Box sx={{ position: "sticky", top: 20 }}>
               <Card sx={{ padding: 2 }}>
                 <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
-                  총 상품 가격: 0원
+                  총 상품 가격: {totalPrice}원
                 </Typography>
                 <Typography variant="subtitle1" sx={{ marginBottom: 1 }}>
                   배송비: 평생 무료
                 </Typography>
                 <Typography variant="h6" sx={{ marginBottom: 2 }}>
-                  총 결제 금액: 0원
+                  총 결제 금액: {totalPrice}원
                 </Typography>
                 <Button
                   variant="contained"
