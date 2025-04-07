@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-import { ProductType } from "../../types";
 import { ProductItem } from ".";
 import { CircularProgress, Grid } from "@mui/material";
 import { getProducts } from "../../utils/api";
